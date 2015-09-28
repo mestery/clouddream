@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM docker.io/armv7/armhf-ubuntu
 
 
 ENV PYTHONPATH /opt/caffe/python
@@ -83,9 +83,13 @@ RUN cd /opt && \
 # Build Caffe core
 RUN cd /opt/caffe && \
   cp Makefile.config.example Makefile.config && \
-   echo "CPU_ONLY := 1" >> Makefile.config && \ 
+  echo "CPU_ONLY := 1" >> Makefile.config && \
   echo "CXX := /usr/bin/g++-4.6" >> Makefile.config && \
   sed -i 's/CXX :=/CXX ?=/' Makefile && \
+  find . -type f -exec sed -i -e 's^"hdf5.h"^"hdf5/serial/hdf5.h"^g' -e 's^"hdf5_hl.h"^"hdf5/serial/hdf5_hl.h"^g' '{}' \; && \
+  find . -type f -exec sed -i -e 's^1099511627776^536870912^g' '{}' \; && \
+  ln -s /usr/lib/arm-linux-gnueabihf/libhdf5_serial.so.8.0.2 /usr/lib/arm-linux-gnueabihf/libhdf5.so && \
+  ln -s /usr/lib/arm-linux-gnueabihf/libhdf5_serial_hl.so.8.0.2 /usr/lib/arm-linux-gnueabihf/libhdf5_hl.so && \
   make all
 
 # Add ld-so.conf so it can find libcaffe.so
